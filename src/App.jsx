@@ -142,6 +142,8 @@ export default function App() {
 
   useEffect(() => {
     // Poll for cast session changes
+    let previousIsCasting = isCasting;
+    
     const checkCastSession = () => {
       try {
         // eslint-disable-next-line no-undef
@@ -150,7 +152,24 @@ export default function App() {
           const context = window.cast.framework.CastContext.getInstance();
           const session = context.getCurrentSession();
           setCastSession(session);
-          setIsCasting(!!session);
+          const nowCasting = !!session;
+          setIsCasting(nowCasting);
+          
+          // If we just started casting and we're in a practice/test session, send current card
+          if (!previousIsCasting && nowCasting && session && (screen === 'practice' || screen === 'test')) {
+            console.log('Casting just started, sending current card');
+            // Use the session directly instead of state
+            const card = currentCard || 
+              (screen === 'practice' && activeDeck && queue.length > 0 ? activeDeck.cards[queue[currentIdx]] : null) ||
+              (screen === 'test' && activeDeck && testQueue.length > 0 ? activeDeck.cards[testQueue[testIdx]] : null);
+            
+            if (card) {
+              console.log('Sending card to cast:', card);
+              // Call sendCardToCast with the session
+              sendCardToCastWithSession(session, card);
+            }
+          }
+          previousIsCasting = nowCasting;
         }
       } catch (e) {
         // SDK not ready yet
@@ -159,7 +178,87 @@ export default function App() {
     
     const interval = setInterval(checkCastSession, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isCasting, screen, currentCard, activeDeck, queue, currentIdx, testQueue, testIdx]);
+
+  const sendCardToCastWithSession = (session, card) => {
+    if (!session || !card) return;
+    
+    try {
+      // eslint-disable-next-line no-undef
+      if (!window.chrome || !window.chrome.cast) return;
+      
+      const cardText = showBack ? (card.back || card.front) : card.front;
+      
+      // Create an image from the card text using canvas - smaller size for Chromecast
+      const canvas = document.createElement('canvas');
+      canvas.width = 1280;
+      canvas.height = 720;
+      const ctx = canvas.getContext('2d');
+      
+      // Background
+      ctx.fillStyle = '#fef3c7';
+      ctx.fillRect(0, 0, 1280, 720);
+      
+      // Text
+      ctx.fillStyle = '#1e293b';
+      ctx.font = 'bold 200px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      
+      // Handle long words
+      const maxWidth = 1100;
+      const words = cardText.split(' ');
+      let lines = [];
+      let currentLine = '';
+      
+      for (let word of words) {
+        const testLine = currentLine + (currentLine ? ' ' : '') + word;
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && currentLine) {
+          lines.push(currentLine);
+          currentLine = word;
+        } else {
+          currentLine = testLine;
+        }
+      }
+      if (currentLine) lines.push(currentLine);
+      
+      // Draw lines
+      const lineHeight = 230;
+      const startY = 360 - ((lines.length - 1) * lineHeight) / 2;
+      
+      lines.forEach((line, idx) => {
+        ctx.fillText(line, 640, startY + idx * lineHeight);
+      });
+      
+      // Convert to data URL
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+      
+      // eslint-disable-next-line no-undef
+      const mediaInfo = new chrome.cast.media.MediaInfo(dataUrl, 'image/jpeg');
+      // eslint-disable-next-line no-undef
+      mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
+      mediaInfo.metadata.title = cardText;
+      mediaInfo.metadata.subtitle = card.back ? 'Tap your device to see the answer' : '';
+      
+      // eslint-disable-next-line no-undef
+      const request = new chrome.cast.media.LoadRequest(mediaInfo);
+      request.currentTime = 0;
+      
+      console.log('Loading media with data URL length:', dataUrl.length);
+      
+      session.loadMedia(request,
+        (media) => {
+          console.log('Cast media loaded successfully:', cardText, media);
+        },
+        (error) => {
+          console.error('Cast load error:', error);
+        }
+      );
+    } catch (e) {
+      console.error('Failed to load media:', e);
+    }
+  };
 
   const sendCardToCast = (card) => {
     if (!castSession || !card) return;
