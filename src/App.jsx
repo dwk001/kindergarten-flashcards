@@ -447,43 +447,15 @@ const addDraftCard = () => {
             ) : (
               <Home className="opacity-70" />
             )}
-            <h1 className="text-lg font-bold">Kindergarten Flashcards</h1>
+            <h1 className="text-lg font-bold">Flashcards</h1>
           </div>
-          <div className="flex items-center gap-2">
-            {/* Cast button - only show on practice/test screens */}
-            {(screen === "practice" || screen === "test") && (
-              <button
-                onClick={() => {
-                  try {
-                    // eslint-disable-next-line no-undef
-                    if (window.cast && window.cast.framework) {
-                      // eslint-disable-next-line no-undef
-                      const castContext = window.cast.framework.CastContext.getInstance();
-                      castContext.requestSession();
-                    } else {
-                      console.error('Cast SDK not available');
-                      alert('Chromecast is not available. Make sure Chrome Cast extension is installed.');
-                    }
-                  } catch (error) {
-                    console.error('Cast error:', error);
-                    alert('Error connecting to Cast: ' + error.message);
-                  }
-                }}
-                className="rounded-full p-2 hover:bg-black/10 active:scale-95"
-                title="Cast to TV"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/>
-                </svg>
-              </button>
-            )}
-          </div>
+          <div />
         </div>
 
         {/* Screens */}
         {screen === "home" && (
           <div className="space-y-4">
-            <p className="text-sm text-slate-600">Tap a deck to practice or test. Create your own with the button below.</p>
+            <p className="text-sm text-slate-600">Tap a deck to practice or test.</p>
 
             <div className="grid grid-cols-2 gap-3">
               {decks.map((d) => (
