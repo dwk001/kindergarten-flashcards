@@ -449,39 +449,7 @@ const addDraftCard = () => {
             )}
             <h1 className="text-lg font-bold">Flashcards</h1>
           </div>
-          <div className="flex items-center gap-2">
-            {/* Cast button - only show on practice/test screens */}
-            {(screen === "practice" || screen === "test") && (
-              <button
-                onClick={() => {
-                  // Just trigger Chrome's cast - it should already be loaded
-                  try {
-                    // Try to use Chrome's cast directly
-                    // eslint-disable-next-line no-undef
-                    if (window.chrome && window.chrome.cast) {
-                      // eslint-disable-next-line no-undef
-                      chrome.cast.requestSession(() => {
-                        console.log('Cast session started');
-                      }, (err) => {
-                        console.log('Cast error:', err);
-                      });
-                    } else {
-                      // Fallback: use the browser's cast
-                      console.log('Opening browser cast');
-                    }
-                  } catch (err) {
-                    console.error('Cast button error:', err);
-                  }
-                }}
-                className="rounded-full p-2 hover:bg-black/10 active:scale-95"
-                title="Cast to TV"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/>
-                </svg>
-              </button>
-            )}
-          </div>
+          <div />
         </div>
 
         {/* Screens */}
