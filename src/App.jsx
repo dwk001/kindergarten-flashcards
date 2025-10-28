@@ -141,10 +141,13 @@ export default function App() {
   const [isCasting, setIsCasting] = useState(false);
 
   useEffect(() => {
+    console.log('CAST DEBUG: useEffect running, isCasting:', isCasting, 'screen:', screen);
+    
     // Poll for cast session changes
     let previousIsCasting = isCasting;
     
     const checkCastSession = () => {
+      console.log('CAST DEBUG: checkCastSession called, previousIsCasting:', previousIsCasting);
       try {
         // eslint-disable-next-line no-undef
         if (window.cast && window.cast.framework) {
