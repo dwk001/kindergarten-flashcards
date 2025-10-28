@@ -451,7 +451,7 @@ const addDraftCard = () => {
           </div>
           <div className="flex items-center gap-2">
             {/* Cast button - only show on practice/test screens */}
-            {(screen === "practice" || screen === "test") && typeof window.cast !== 'undefined' && (
+            {(screen === "practice" || screen === "test") && (
               <google-cast-launcher style={{ background: 'none', border: 'none', cursor: 'pointer' }} />
             )}
           </div>
