@@ -215,30 +215,64 @@ export default function App() {
       ctx.fillStyle = '#475569';
       ctx.fillText(`${percentage}%`, 960, 900);
       
-      // Save to localStorage and create a data URL
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-      
-      // eslint-disable-next-line no-undef
-      const mediaInfo = new chrome.cast.media.MediaInfo(dataUrl, 'image/jpeg');
-      // eslint-disable-next-line no-undef
-      mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
-      mediaInfo.metadata.title = message;
-      mediaInfo.metadata.subtitle = `Score: ${score.correct}/${score.total}`;
-      
-      // eslint-disable-next-line no-undef
-      const request = new chrome.cast.media.LoadRequest(mediaInfo);
-      request.currentTime = 0;
-      
-      console.log('Loading high-quality results to cast');
-      
-      session.loadMedia(request,
-        (media) => {
-          console.log('Cast results loaded successfully');
-        },
-        (error) => {
-          console.error('Cast results load error:', error);
+      // Convert to blob and upload to server
+      canvas.toBlob(async (blob) => {
+        try {
+          // Upload to image server
+          const formData = new FormData();
+          formData.append('image', blob, 'results.jpg');
+          
+          const response = await fetch('http://192.168.1.112:8087/upload-image', {
+            method: 'POST',
+            body: formData
+          });
+          
+          if (!response.ok) {
+            throw new Error('Upload failed');
+          }
+          
+          const data = await response.json();
+          const imageUrl = data.url;
+          
+          console.log('Image uploaded to:', imageUrl);
+          
+          // Cast the hosted image
+          // eslint-disable-next-line no-undef
+          const mediaInfo = new chrome.cast.media.MediaInfo(imageUrl, 'image/jpeg');
+          // eslint-disable-next-line no-undef
+          mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
+          mediaInfo.metadata.title = message;
+          mediaInfo.metadata.subtitle = `Score: ${score.correct}/${score.total}`;
+          
+          // eslint-disable-next-line no-undef
+          const request = new chrome.cast.media.LoadRequest(mediaInfo);
+          request.currentTime = 0;
+          
+          console.log('Casting hosted image:', imageUrl);
+          
+          session.loadMedia(request,
+            (media) => {
+              console.log('Cast results loaded successfully');
+            },
+            (error) => {
+              console.error('Cast results load error:', error);
+            }
+          );
+        } catch (e) {
+          console.error('Failed to upload/cast results:', e);
+          // Fallback to data URL if upload fails
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          // eslint-disable-next-line no-undef
+          const mediaInfo = new chrome.cast.media.MediaInfo(dataUrl, 'image/jpeg');
+          // eslint-disable-next-line no-undef
+          mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
+          mediaInfo.metadata.title = message;
+          // eslint-disable-next-line no-undef
+          const request = new chrome.cast.media.LoadRequest(mediaInfo);
+          request.currentTime = 0;
+          session.loadMedia(request, () => {}, () => {});
         }
-      );
+      }, 'image/jpeg', 0.95);
     } catch (e) {
       console.error('Failed to load results:', e);
     }
