@@ -143,6 +143,79 @@ export default function App() {
   // Simplified: Just track if we're casting via state (updated when button is clicked)
   // No polling needed since we capture session directly in button onClick
 
+  const sendResultsToCast = (session, score) => {
+    if (!session) return;
+    
+    try {
+      // eslint-disable-next-line no-undef
+      if (!window.chrome || !window.chrome.cast) return;
+      
+      const percentage = Math.round((score.correct / Math.max(1, score.total)) * 100);
+      let message;
+      if (percentage === 100) {
+        message = "Perfect!";
+      } else if (percentage >= 80) {
+        message = "Great job!";
+      } else if (percentage >= 60) {
+        message = "Good work!";
+      } else if (percentage >= 40) {
+        message = "Keep practicing!";
+      } else if (percentage >= 20) {
+        message = "Nice try! Keep going!";
+      } else {
+        message = "Let's practice together!";
+      }
+      
+      // Create an image with results
+      const canvas = document.createElement('canvas');
+      canvas.width = 1280;
+      canvas.height = 720;
+      const ctx = canvas.getContext('2d');
+      
+      // Background
+      ctx.fillStyle = '#fef3c7';
+      ctx.fillRect(0, 0, 1280, 720);
+      
+      // Results text
+      ctx.fillStyle = '#1e293b';
+      ctx.font = 'bold 180px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(message, 640, 280);
+      
+      // Score text
+      ctx.font = 'bold 120px Arial';
+      ctx.fillText(`${score.correct} / ${score.total}`, 640, 460);
+      
+      // Convert to data URL
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+      
+      // eslint-disable-next-line no-undef
+      const mediaInfo = new chrome.cast.media.MediaInfo(dataUrl, 'image/jpeg');
+      // eslint-disable-next-line no-undef
+      mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
+      mediaInfo.metadata.title = message;
+      mediaInfo.metadata.subtitle = `Score: ${score.correct}/${score.total}`;
+      
+      // eslint-disable-next-line no-undef
+      const request = new chrome.cast.media.LoadRequest(mediaInfo);
+      request.currentTime = 0;
+      
+      console.log('Loading results to cast');
+      
+      session.loadMedia(request,
+        (media) => {
+          console.log('Cast results loaded successfully');
+        },
+        (error) => {
+          console.error('Cast results load error:', error);
+        }
+      );
+    } catch (e) {
+      console.error('Failed to load results:', e);
+    }
+  };
+
   const sendCardToCastWithSession = (session, card) => {
     if (!session || !card) return;
     
@@ -375,7 +448,11 @@ export default function App() {
     setTestScore((s) => ({ ...s, correct: s.correct + (correct ? 1 : 0) }));
     if (testIdx + 1 >= testQueue.length) {
       setScreen("results");
-      // Results screen - no card to send
+      // Send results to TV if casting
+      if (isCasting && castSession) {
+        const finalScore = { correct: testScore.correct + (correct ? 1 : 0), total: testQueue.length };
+        sendResultsToCast(castSession, finalScore);
+      }
     } else {
       setTestIdx(testIdx + 1);
       setShowBack(false);
