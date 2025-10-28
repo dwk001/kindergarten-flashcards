@@ -19,16 +19,20 @@
     <script>
       window['__onGCastApiAvailable'] = function(isAvailable) {
         if (isAvailable) {
-          try {
-            const context = cast.framework.CastContext.getInstance();
-            context.setOptions({
-              receiverApplicationId: '34E3CA03',
-              autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
-            });
-            console.log('Cast SDK initialized successfully');
-          } catch (error) {
-            console.error('Cast SDK initialization error:', error);
-          }
+          setTimeout(function() {
+            try {
+              if (typeof cast !== 'undefined' && cast.framework) {
+                const context = cast.framework.CastContext.getInstance();
+                context.setOptions({
+                  receiverApplicationId: '34E3CA03',
+                  autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+                });
+                console.log('Cast SDK initialized successfully');
+              }
+            } catch (error) {
+              console.error('Cast SDK initialization error:', error);
+            }
+          }, 100);
         } else {
           console.warn('Cast SDK not available');
         }
