@@ -36,8 +36,8 @@ app.post('/upload-image', upload.single('image'), (req, res) => {
     // Save file to disk
     fs.writeFileSync(filepath, req.file.buffer);
 
-    // Return URL (adjust this to your server's actual URL)
-    const imageUrl = `http://192.168.1.112:8086/uploads/${filename}`;
+    // Return URL that will work through HTTPS proxy
+    const imageUrl = `https://flashcards.dwk001.com/uploads/${filename}`;
     
     res.json({ url: imageUrl });
   } catch (error) {

@@ -222,7 +222,7 @@ export default function App() {
           const formData = new FormData();
           formData.append('image', blob, 'results.jpg');
           
-          const response = await fetch('http://192.168.1.112:8087/upload-image', {
+          const response = await fetch('/upload-image', {
             method: 'POST',
             body: formData
           });
