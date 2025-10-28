@@ -14,6 +14,15 @@
       tailwind.config = { theme: { extend: {} } }
     </script>
     
+    <style>
+      /* Style the Google Cast launcher button */
+      google-cast-launcher {
+        --connected-color: #10b981;
+        --disconnected-color: #475569;
+        cursor: pointer;
+      }
+    </style>
+    
     <!-- Google Cast SDK -->
     <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"></script>
     <script>

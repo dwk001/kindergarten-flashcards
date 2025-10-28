@@ -95,10 +95,6 @@ export default function App() {
   // screens: home | mode | practice | test | results | editor
   const [screen, setScreen] = useState(/** @type{"home"|"mode"|"practice"|"test"|"results"|"editor"} */("home"));
   const [activeDeckId, setActiveDeckId] = useState(null);
-  
-  // Cast state
-  const [castSession, setCastSession] = useState(null);
-  const [isCasting, setIsCasting] = useState(false);
 
   // practice state
   const [queue, setQueue] = useState([]); // indices into deck.cards
@@ -140,29 +136,38 @@ export default function App() {
   }, []);
 
   // ---------- Cast functionality ----------
+  // Cast state
+  const [castSession, setCastSession] = useState(null);
+  const [isCasting, setIsCasting] = useState(false);
+
   useEffect(() => {
-    // eslint-disable-next-line no-undef
-    if (typeof window.cast === 'undefined') return;
-    
-    // eslint-disable-next-line no-undef
-    const castContext = window.cast.framework.CastContext.getInstance();
-    const sessionChanged = () => {
-      const session = castContext.getCurrentSession();
-      setCastSession(session);
-      setIsCasting(!!session);
+    // Poll for cast session changes
+    const checkCastSession = () => {
+      try {
+        // eslint-disable-next-line no-undef
+        if (window.cast && window.cast.framework) {
+          // eslint-disable-next-line no-undef
+          const context = window.cast.framework.CastContext.getInstance();
+          const session = context.getCurrentSession();
+          setCastSession(session);
+          setIsCasting(!!session);
+        }
+      } catch (e) {
+        // SDK not ready yet
+      }
     };
     
-    // eslint-disable-next-line no-undef
-    castContext.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, sessionChanged);
-    return () => {
-      // eslint-disable-next-line no-undef
-      castContext.removeEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, sessionChanged);
-    };
+    const interval = setInterval(checkCastSession, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   const sendCastMessage = (message) => {
     if (castSession) {
-      castSession.sendMessage('urn:x-cast:com.kinderflashcards', message);
+      try {
+        castSession.sendMessage('urn:x-cast:com.kinderflashcards', message);
+      } catch (e) {
+        console.error('Failed to send cast message:', e);
+      }
     }
   };
 
@@ -449,7 +454,13 @@ const addDraftCard = () => {
             )}
             <h1 className="text-lg font-bold">Flashcards</h1>
           </div>
-          <div />
+          <div className="flex items-center gap-2">
+            {/* Cast button - Google Cast web component */}
+            <google-cast-launcher 
+              id="cast-launcher"
+              className={(screen === "practice" || screen === "test") ? "" : "hidden"}
+            />
+          </div>
         </div>
 
         {/* Screens */}
