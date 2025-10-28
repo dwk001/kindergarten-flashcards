@@ -156,17 +156,25 @@ export default function App() {
           setIsCasting(nowCasting);
           
           // If we just started casting and we're in a practice/test session, send current card
-          if (!previousIsCasting && nowCasting && session && (screen === 'practice' || screen === 'test')) {
-            console.log('Casting just started, sending current card');
-            // Use the session directly instead of state
-            const card = currentCard || 
-              (screen === 'practice' && activeDeck && queue.length > 0 ? activeDeck.cards[queue[currentIdx]] : null) ||
-              (screen === 'test' && activeDeck && testQueue.length > 0 ? activeDeck.cards[testQueue[testIdx]] : null);
-            
-            if (card) {
-              console.log('Sending card to cast:', card);
-              // Call sendCardToCast with the session
-              sendCardToCastWithSession(session, card);
+          if (!previousIsCasting && nowCasting && session) {
+            console.log('Casting just started. Screen:', screen, 'Practice/Test mode:', screen === 'practice' || screen === 'test');
+            if (screen === 'practice' || screen === 'test') {
+              console.log('In practice/test mode, getting card...');
+              // Use the session directly instead of state
+              const card = currentCard || 
+                (screen === 'practice' && activeDeck && queue.length > 0 ? activeDeck.cards[queue[currentIdx]] : null) ||
+                (screen === 'test' && activeDeck && testQueue.length > 0 ? activeDeck.cards[testQueue[testIdx]] : null);
+              
+              console.log('Card found:', card);
+              if (card) {
+                console.log('Sending card to cast:', card);
+                // Call sendCardToCast with the session
+                sendCardToCastWithSession(session, card);
+              } else {
+                console.log('No card found to send');
+              }
+            } else {
+              console.log('Not in practice/test mode, not sending card');
             }
           }
           previousIsCasting = nowCasting;
