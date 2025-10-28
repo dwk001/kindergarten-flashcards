@@ -226,9 +226,12 @@ export default function App() {
       const request = new chrome.cast.media.LoadRequest(mediaInfo);
       request.currentTime = 0;
       
+      console.log('Loading media with data URL length:', dataUrl.length);
+      console.log('Request:', request);
+      
       castSession.loadMedia(request,
         (media) => {
-          console.log('Cast media loaded:', cardText);
+          console.log('Cast media loaded successfully:', cardText, media);
         },
         (error) => {
           console.error('Cast load error:', error);
