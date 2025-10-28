@@ -13,6 +13,20 @@
     <script>
       tailwind.config = { theme: { extend: {} } }
     </script>
+    
+    <!-- Google Cast SDK -->
+    <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"></script>
+    <script>
+      window['__onGCastApiAvailable'] = function(isAvailable) {
+        if (isAvailable) {
+          const context = cast.framework.CastContext.getInstance();
+          context.setOptions({
+            receiverApplicationId: '34E3CA03',
+            autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+          });
+        }
+      };
+    </script>
   </head>
   <body class="min-h-screen">
     <noscript>You need to enable JavaScript to run this app.</noscript>

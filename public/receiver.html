@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kindergarten Flashcards Receiver</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+      background: linear-gradient(to bottom, #fef3c7, #fde68a);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    
+    #card-container {
+      width: 90%;
+      max-width: 800px;
+      background: white;
+      border-radius: 48px;
+      padding: 80px 60px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    
+    #card-text {
+      font-size: 72px;
+      font-weight: bold;
+      color: #1e293b;
+      line-height: 1.1;
+      word-break: break-word;
+      min-height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    #card-flip-hint {
+      margin-top: 20px;
+      font-size: 16px;
+      color: #94a3b8;
+    }
+    
+    #progress {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 12px 24px;
+      border-radius: 24px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #475569;
+    }
+  </style>
+</head>
+<body>
+  <div id="progress">1 / 1</div>
+  <div id="card-container">
+    <div id="card-text">Tap to start</div>
+    <div id="card-flip-hint" style="display: none;">Tap screen to flip</div>
+  </div>
+  
+  <script src="https://www.gstatic.com/cast/cdm/receiver.js"></script>
+  
+  <script>
+    const playerManager = cast.framework.CastReceiverContext.getInstance().getPlayerManager();
+    const context = cast.framework.CastReceiverContext.getInstance();
+    let currentCard = null;
+    let showBack = false;
+    
+    const cardTextEl = document.getElementById('card-text');
+    const hintEl = document.getElementById('card-flip-hint');
+    const progressEl = document.getElementById('progress');
+    
+    // Handle messages from the sender
+    context.addCustomMessageListener('urn:x-cast:com.kinderflashcards', (event) => {
+      const data = event.data;
+      
+      if (data.type === 'card') {
+        currentCard = data.card;
+        showBack = false;
+        updateDisplay();
+        
+        // Show progress
+        if (data.idx && data.total) {
+          progressEl.textContent = `${data.idx} / ${data.total}`;
+        }
+      } else if (data.type === 'flip') {
+        showBack = !showBack;
+        updateDisplay();
+      } else if (data.type === 'results') {
+        showResults(data.score);
+      }
+    });
+    
+    function updateDisplay() {
+      if (!currentCard) return;
+      
+      const text = showBack 
+        ? (currentCard.back || currentCard.front || '')
+        : (currentCard.front || '');
+        
+      cardTextEl.textContent = text;
+      hintEl.style.display = currentCard.back ? 'block' : 'none';
+    }
+    
+    function showResults(score) {
+      const percentage = Math.round((score.correct / score.total) * 100);
+      let message;
+      
+      if (percentage === 100) {
+        message = "Perfect! 🌟";
+      } else if (percentage >= 80) {
+        message = "Great job! 🎉";
+      } else if (percentage >= 60) {
+        message = "Good work! 👍";
+      } else {
+        message = "Keep practicing! 💪";
+      }
+      
+      cardTextEl.textContent = message;
+      progressEl.textContent = `${score.correct} / ${score.total}`;
+    }
+    
+    // Start the Cast receiver
+    context.start();
+    
+    // Allow tap to flip card
+    document.getElementById('card-container').addEventListener('click', () => {
+      if (currentCard && currentCard.back) {
+        showBack = !showBack;
+        updateDisplay();
+      }
+    });
+  </script>
+</body>
+</html>
+

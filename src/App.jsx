@@ -92,6 +92,10 @@ export default function App() {
   // screens: home | mode | practice | test | results | editor
   const [screen, setScreen] = useState(/** @type{"home"|"mode"|"practice"|"test"|"results"|"editor"} */("home"));
   const [activeDeckId, setActiveDeckId] = useState(null);
+  
+  // Cast state
+  const [castSession, setCastSession] = useState(null);
+  const [isCasting, setIsCasting] = useState(false);
 
   // practice state
   const [queue, setQueue] = useState([]); // indices into deck.cards
@@ -132,15 +136,55 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ---------- Cast functionality ----------
+  useEffect(() => {
+    // eslint-disable-next-line no-undef
+    if (typeof window.cast === 'undefined') return;
+    
+    // eslint-disable-next-line no-undef
+    const castContext = window.cast.framework.CastContext.getInstance();
+    const sessionChanged = () => {
+      const session = castContext.getCurrentSession();
+      setCastSession(session);
+      setIsCasting(!!session);
+    };
+    
+    // eslint-disable-next-line no-undef
+    castContext.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, sessionChanged);
+    return () => {
+      // eslint-disable-next-line no-undef
+      castContext.removeEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, sessionChanged);
+    };
+  }, []);
+
+  const sendCastMessage = (message) => {
+    if (castSession) {
+      castSession.sendMessage('urn:x-cast:com.kinderflashcards', message);
+    }
+  };
+
   // ---------- Practice mode ----------
   useEffect(() => {
     if (screen !== "practice" || !activeDeck) return;
     const indices = activeDeck.cards.map((_, i) => i);
-    setQueue(shuffleArray(indices));
+    const shuffled = shuffleArray(indices);
+    setQueue(shuffled);
     setCurrentIdx(0);
     setShowBack(false);
     setStats({ seen: 0, correct: 0 });
-  }, [screen, activeDeckId]);
+    
+    // Send initial card to Chromecast if casting
+    if (isCasting && activeDeck.cards.length > 0) {
+      sendCastMessage({ 
+        type: 'card', 
+        card: activeDeck.cards[shuffled[0]], 
+        showBack: false,
+        idx: 1,
+        total: shuffled.length 
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen, activeDeckId, isCasting]);
 
   const flip = () => setShowBack((b) => !b);
 
@@ -166,6 +210,18 @@ export default function App() {
     setCurrentIdx(newIdx);
     setShowBack(false);
     setStats((s) => ({ seen: s.seen + 1, correct: s.correct + (correct ? 1 : 0) }));
+    
+    // Send card to Chromecast if casting
+    if (isCasting && activeDeck && activeDeck.cards.length > 0) {
+      const nextCard = activeDeck.cards[q[newIdx]];
+      sendCastMessage({ 
+        type: 'card', 
+        card: nextCard, 
+        showBack: false,
+        idx: newIdx + 1,
+        total: q.length 
+      });
+    }
   };
 
   // ---------- Test mode ----------
@@ -177,6 +233,17 @@ export default function App() {
     setTestScore({ correct: 0, total: indices.length });
     setShowBack(false);
     setScreen("test");
+    
+    // Send initial card to Chromecast if casting
+    if (isCasting && activeDeck.cards.length > 0) {
+      sendCastMessage({ 
+        type: 'card', 
+        card: activeDeck.cards[indices[0]], 
+        showBack: false,
+        idx: 1,
+        total: indices.length 
+      });
+    }
   };
 
   const currentTestCard = activeDeck && testQueue.length ? activeDeck.cards[testQueue[testIdx]] : null;
@@ -185,9 +252,24 @@ export default function App() {
     setTestScore((s) => ({ ...s, correct: s.correct + (correct ? 1 : 0) }));
     if (testIdx + 1 >= testQueue.length) {
       setScreen("results");
+      if (isCasting) {
+        sendCastMessage({ type: 'results', score: { correct: testScore.correct + (correct ? 1 : 0), total: testQueue.length } });
+      }
     } else {
       setTestIdx(testIdx + 1);
       setShowBack(false);
+      
+      // Send next card to Chromecast if casting
+      if (isCasting && activeDeck && activeDeck.cards.length > 0) {
+        const nextCard = activeDeck.cards[testQueue[testIdx + 1]];
+        sendCastMessage({ 
+          type: 'card', 
+          card: nextCard, 
+          showBack: false,
+          idx: testIdx + 2,
+          total: testQueue.length 
+        });
+      }
     }
   };
 
@@ -364,7 +446,12 @@ const addDraftCard = () => {
             )}
             <h1 className="text-lg font-bold">Kindergarten Flashcards</h1>
           </div>
-          <div />
+          <div className="flex items-center gap-2">
+            {/* Cast button - only show on practice/test screens */}
+            {(screen === "practice" || screen === "test") && typeof window.cast !== 'undefined' && (
+              <google-cast-launcher style={{ background: 'none', border: 'none', cursor: 'pointer' }} />
+            )}
+          </div>
         </div>
 
         {/* Screens */}
