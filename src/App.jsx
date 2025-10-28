@@ -455,11 +455,37 @@ const addDraftCard = () => {
             <h1 className="text-lg font-bold">Flashcards</h1>
           </div>
           <div className="flex items-center gap-2">
-            {/* Cast button - Google Cast web component */}
-            <google-cast-launcher 
-              id="cast-launcher"
-              className={(screen === "practice" || screen === "test") ? "" : "hidden"}
-            />
+            {/* Cast button - only show on practice/test screens */}
+            {(screen === "practice" || screen === "test") && (
+              <button
+                onClick={() => {
+                  try {
+                    // eslint-disable-next-line no-undef
+                    if (window.chrome && window.chrome.cast && window.chrome.cast.requestSession) {
+                      // eslint-disable-next-line no-undef
+                      window.chrome.cast.requestSession(
+                        (session) => {
+                          console.log('Cast session started:', session);
+                        },
+                        (error) => {
+                          console.log('Cast session error:', error);
+                        }
+                      );
+                    } else {
+                      alert('Cast not available. Make sure you are using Chrome browser.');
+                    }
+                  } catch (error) {
+                    console.error('Cast error:', error);
+                  }
+                }}
+                className="rounded-full p-2 hover:bg-black/10 active:scale-95 transition"
+                title="Cast to TV"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="text-slate-700">
+                  <path d="M21 3H3c-1.1 0-2 .9-2 2v3h2V5h18v14h-7v2h7c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM1 18v3h3c0-1.66-1.34-3-3-3zm0-4v2c2.76 0 5 2.24 5 5h2c0-3.87-3.13-7-7-7zm0-4v2c4.97 0 9 4.03 9 9h2c0-6.08-4.93-11-11-11z"/>
+                </svg>
+              </button>
+            )}
           </div>
         </div>
 
