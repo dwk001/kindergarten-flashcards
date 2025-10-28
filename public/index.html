@@ -19,12 +19,18 @@
     <script>
       window['__onGCastApiAvailable'] = function(isAvailable) {
         if (isAvailable) {
-          const context = cast.framework.CastContext.getInstance();
-          context.setOptions({
-            receiverApplicationId: '34E3CA03',
-            autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
-            receiverName: 'https://flashcards.dwk001.com/receiver.html'
-          });
+          try {
+            const context = cast.framework.CastContext.getInstance();
+            context.setOptions({
+              receiverApplicationId: '34E3CA03',
+              autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+            });
+            console.log('Cast SDK initialized successfully');
+          } catch (error) {
+            console.error('Cast SDK initialization error:', error);
+          }
+        } else {
+          console.warn('Cast SDK not available');
         }
       };
     </script>
