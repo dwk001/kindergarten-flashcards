@@ -161,13 +161,39 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
-  const sendCastMessage = (message) => {
-    if (castSession) {
-      try {
-        castSession.sendMessage('urn:x-cast:com.kinderflashcards', message);
-      } catch (e) {
-        console.error('Failed to send cast message:', e);
-      }
+  const sendCardToCast = (card) => {
+    if (!castSession || !card) return;
+    
+    try {
+      // eslint-disable-next-line no-undef
+      if (!window.chrome || !window.chrome.cast) return;
+      
+      // Create an image URL with the card text using a data URL
+      const cardText = showBack ? (card.back || card.front) : card.front;
+      
+      // For now, just show card text in the device's media title/description
+      // eslint-disable-next-line no-undef
+      const mediaInfo = new chrome.cast.media.MediaInfo('flashcards', 'image/jpeg');
+      // eslint-disable-next-line no-undef
+      mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
+      mediaInfo.metadata.title = cardText;
+      mediaInfo.metadata.subtitle = card.back ? 'Tap your device to see the answer' : '';
+      
+      // eslint-disable-next-line no-undef
+      const request = new chrome.cast.media.LoadRequest(mediaInfo);
+      request.currentTime = 0;
+      
+      const session = castSession;
+      session.loadMedia(request,
+        (media) => {
+          console.log('Cast media loaded:', cardText);
+        },
+        (error) => {
+          console.error('Cast load error:', error);
+        }
+      );
+    } catch (e) {
+      console.error('Failed to load media:', e);
     }
   };
 
@@ -183,13 +209,7 @@ export default function App() {
     
     // Send initial card to Chromecast if casting
     if (isCasting && activeDeck.cards.length > 0) {
-      sendCastMessage({ 
-        type: 'card', 
-        card: activeDeck.cards[shuffled[0]], 
-        showBack: false,
-        idx: 1,
-        total: shuffled.length 
-      });
+      sendCardToCast(activeDeck.cards[shuffled[0]]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screen, activeDeckId, isCasting]);
@@ -222,13 +242,7 @@ export default function App() {
     // Send card to Chromecast if casting
     if (isCasting && activeDeck && activeDeck.cards.length > 0) {
       const nextCard = activeDeck.cards[q[newIdx]];
-      sendCastMessage({ 
-        type: 'card', 
-        card: nextCard, 
-        showBack: false,
-        idx: newIdx + 1,
-        total: q.length 
-      });
+      sendCardToCast(nextCard);
     }
   };
 
@@ -244,13 +258,7 @@ export default function App() {
     
     // Send initial card to Chromecast if casting
     if (isCasting && activeDeck.cards.length > 0) {
-      sendCastMessage({ 
-        type: 'card', 
-        card: activeDeck.cards[indices[0]], 
-        showBack: false,
-        idx: 1,
-        total: indices.length 
-      });
+      sendCardToCast(activeDeck.cards[indices[0]]);
     }
   };
 
@@ -260,9 +268,7 @@ export default function App() {
     setTestScore((s) => ({ ...s, correct: s.correct + (correct ? 1 : 0) }));
     if (testIdx + 1 >= testQueue.length) {
       setScreen("results");
-      if (isCasting) {
-        sendCastMessage({ type: 'results', score: { correct: testScore.correct + (correct ? 1 : 0), total: testQueue.length } });
-      }
+      // Results screen - no card to send
     } else {
       setTestIdx(testIdx + 1);
       setShowBack(false);
@@ -270,13 +276,7 @@ export default function App() {
       // Send next card to Chromecast if casting
       if (isCasting && activeDeck && activeDeck.cards.length > 0) {
         const nextCard = activeDeck.cards[testQueue[testIdx + 1]];
-        sendCastMessage({ 
-          type: 'card', 
-          card: nextCard, 
-          showBack: false,
-          idx: testIdx + 2,
-          total: testQueue.length 
-        });
+        sendCardToCast(nextCard);
       }
     }
   };

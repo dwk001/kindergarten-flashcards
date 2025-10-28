@@ -30,8 +30,10 @@
         if (isAvailable) {
           try {
             // Initialize the older Chrome Cast API
-            // Use our custom receiver app ID to display flashcard content
-            const sessionRequest = new chrome.cast.SessionRequest('34E3CA03');
+            // Use default media receiver to show ALL devices, but we'll send custom messages
+            const sessionRequest = new chrome.cast.SessionRequest(
+              chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
+            );
             const apiConfig = new chrome.cast.ApiConfig(
               sessionRequest,
               function sessionListener(session) {
