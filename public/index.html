@@ -30,7 +30,10 @@
         if (isAvailable) {
           try {
             // Initialize the older Chrome Cast API
-            const sessionRequest = new chrome.cast.SessionRequest('34E3CA03');
+            // Use chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID to show ALL devices
+            const sessionRequest = new chrome.cast.SessionRequest(
+              chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
+            );
             const apiConfig = new chrome.cast.ApiConfig(
               sessionRequest,
               function sessionListener(session) {
@@ -42,7 +45,7 @@
             );
             chrome.cast.initialize(apiConfig, 
               function() {
-                console.log('Cast API initialized successfully');
+                console.log('Cast API initialized successfully - showing all devices');
               },
               function(error) {
                 console.error('Cast API initialization error:', error);
