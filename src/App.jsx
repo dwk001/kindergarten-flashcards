@@ -166,29 +166,29 @@ export default function App() {
         message = "Let's practice together!";
       }
       
-      // Create an image with results
+      // Create an image with results - smaller size to reduce data URL length
       const canvas = document.createElement('canvas');
-      canvas.width = 1280;
-      canvas.height = 720;
+      canvas.width = 960;  // Reduced from 1280
+      canvas.height = 540;  // Reduced from 720
       const ctx = canvas.getContext('2d');
       
       // Background
       ctx.fillStyle = '#fef3c7';
-      ctx.fillRect(0, 0, 1280, 720);
+      ctx.fillRect(0, 0, 960, 540);
       
-      // Results text
+      // Results text - reduced font size
       ctx.fillStyle = '#1e293b';
-      ctx.font = 'bold 180px Arial';
+      ctx.font = 'bold 120px Arial';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(message, 640, 280);
+      ctx.fillText(message, 480, 180);
       
-      // Score text
-      ctx.font = 'bold 120px Arial';
-      ctx.fillText(`${score.correct} / ${score.total}`, 640, 460);
+      // Score text - reduced font size
+      ctx.font = 'bold 80px Arial';
+      ctx.fillText(`${score.correct} / ${score.total}`, 480, 300);
       
-      // Convert to data URL
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+      // Convert to data URL - lower quality
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
       
       // eslint-disable-next-line no-undef
       const mediaInfo = new chrome.cast.media.MediaInfo(dataUrl, 'image/jpeg');
