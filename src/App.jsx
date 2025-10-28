@@ -22,7 +22,7 @@ const LS_KEY = "kinder_flashcards_v3";
 const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
 // Use /api path when behind HTTPS proxy, otherwise use direct port
 const API_BASE = window.location.protocol === 'https:' 
-  ? `${window.location.protocol}//${window.location.hostname}/api`
+  ? `${window.location.protocol}//${window.location.hostname}/api/`
   : `${window.location.protocol}//${window.location.hostname}:8086`;
 
 async function api(method, path, body) {
