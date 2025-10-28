@@ -152,8 +152,9 @@ export default function App() {
         if (window.chrome && window.chrome.cast) {
           console.log('CAST DEBUG: Using chrome.cast API');
           // eslint-disable-next-line no-undef
-          const session = window.chrome.cast && window.chrome.cast.isAvailable ? 
-            window.chrome.cast.currentSession : null;
+          // Try to get the current session via the helper function
+          const session = window.getChromecastSession ? window.getChromecastSession() : null;
+          console.log('CAST DEBUG: session from helper:', session);
           
           setCastSession(session);
           const nowCasting = !!session;

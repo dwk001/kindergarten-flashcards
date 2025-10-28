@@ -46,6 +46,11 @@
             chrome.cast.initialize(apiConfig, 
               function() {
                 console.log('Cast API initialized successfully - showing all devices');
+                
+                // Store a reference to get the current session
+                window.getChromecastSession = function() {
+                  return chrome.cast.initialize ? chrome.cast.getCurrentSession() : null;
+                };
               },
               function(error) {
                 console.error('Cast API initialization error:', error);
