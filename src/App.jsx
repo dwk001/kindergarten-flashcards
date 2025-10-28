@@ -454,17 +454,8 @@ const addDraftCard = () => {
             {(screen === "practice" || screen === "test") && (
               <button
                 onClick={() => {
-                  // Simply trigger Chrome's native cast picker
-                  // eslint-disable-next-line no-undef
-                  if (typeof chrome !== 'undefined' && chrome.cast && chrome.cast.requestSession) {
-                    // eslint-disable-next-line no-undef
-                    chrome.cast.requestSession(() => {}, () => {
-                      // If no session available, show info
-                      console.log('No cast session available');
-                    });
-                  } else {
-                    alert('Use the three-dot menu (top right) > Cast to display on TV');
-                  }
+                  // Show helpful message directing to Chrome's cast menu
+                  alert('To cast this app:\n1. Open the Chrome menu (three dots, top right)\n2. Click "Cast..."\n3. Select your TV\n\nThis will show the flashcards on your TV!');
                 }}
                 className="rounded-full p-2 hover:bg-black/10 active:scale-95"
                 title="Cast to TV"
