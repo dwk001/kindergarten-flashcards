@@ -168,12 +168,55 @@ export default function App() {
       // eslint-disable-next-line no-undef
       if (!window.chrome || !window.chrome.cast) return;
       
-      // Create an image URL with the card text using a data URL
       const cardText = showBack ? (card.back || card.front) : card.front;
       
-      // For now, just show card text in the device's media title/description
+      // Create an image from the card text using canvas
+      const canvas = document.createElement('canvas');
+      canvas.width = 1920;
+      canvas.height = 1080;
+      const ctx = canvas.getContext('2d');
+      
+      // Background
+      ctx.fillStyle = '#fef3c7';
+      ctx.fillRect(0, 0, 1920, 1080);
+      
+      // Text
+      ctx.fillStyle = '#1e293b';
+      ctx.font = 'bold 300px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      
+      // Handle long words by splitting into lines
+      const maxWidth = 1600;
+      const words = cardText.split(' ');
+      let lines = [];
+      let currentLine = '';
+      
+      for (let word of words) {
+        const testLine = currentLine + (currentLine ? ' ' : '') + word;
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && currentLine) {
+          lines.push(currentLine);
+          currentLine = word;
+        } else {
+          currentLine = testLine;
+        }
+      }
+      if (currentLine) lines.push(currentLine);
+      
+      // Draw lines
+      const lineHeight = 350;
+      const startY = 540 - ((lines.length - 1) * lineHeight) / 2;
+      
+      lines.forEach((line, idx) => {
+        ctx.fillText(line, 960, startY + idx * lineHeight);
+      });
+      
+      // Convert canvas to data URL
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      
       // eslint-disable-next-line no-undef
-      const mediaInfo = new chrome.cast.media.MediaInfo('flashcards', 'image/jpeg');
+      const mediaInfo = new chrome.cast.media.MediaInfo(dataUrl, 'image/jpeg');
       // eslint-disable-next-line no-undef
       mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
       mediaInfo.metadata.title = cardText;
@@ -183,8 +226,7 @@ export default function App() {
       const request = new chrome.cast.media.LoadRequest(mediaInfo);
       request.currentTime = 0;
       
-      const session = castSession;
-      session.loadMedia(request,
+      castSession.loadMedia(request,
         (media) => {
           console.log('Cast media loaded:', cardText);
         },
