@@ -143,7 +143,7 @@ export default function App() {
   // Simplified: Just track if we're casting via state (updated when button is clicked)
   // No polling needed since we capture session directly in button onClick
 
-  const sendResultsToCast = (session, score) => {
+  const sendResultsToCast = async (session, score) => {
     if (!session) return;
     
     try {
@@ -151,44 +151,72 @@ export default function App() {
       if (!window.chrome || !window.chrome.cast) return;
       
       const percentage = Math.round((score.correct / Math.max(1, score.total)) * 100);
-      let message;
+      let message, emoji;
       if (percentage === 100) {
         message = "Perfect!";
+        emoji = "🌟";
       } else if (percentage >= 80) {
         message = "Great job!";
+        emoji = "🎉";
       } else if (percentage >= 60) {
         message = "Good work!";
+        emoji = "👍";
       } else if (percentage >= 40) {
         message = "Keep practicing!";
+        emoji = "💪";
       } else if (percentage >= 20) {
         message = "Nice try! Keep going!";
+        emoji = "🌱";
       } else {
         message = "Let's practice together!";
+        emoji = "🌈";
       }
       
-      // Create an image with results - smaller size to reduce data URL length
+      // Create a high-quality image with nice design
       const canvas = document.createElement('canvas');
-      canvas.width = 960;  // Reduced from 1280
-      canvas.height = 540;  // Reduced from 720
+      canvas.width = 1920;
+      canvas.height = 1080;
       const ctx = canvas.getContext('2d');
       
-      // Background
-      ctx.fillStyle = '#fef3c7';
-      ctx.fillRect(0, 0, 960, 540);
+      // Gradient background
+      const gradient = ctx.createLinearGradient(0, 0, 0, 1080);
+      gradient.addColorStop(0, '#fef3c7');
+      gradient.addColorStop(1, '#fde68a');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 1920, 1080);
       
-      // Results text - reduced font size
+      // Decorative circles
+      ctx.fillStyle = 'rgba(255, 182, 193, 0.2)';
+      ctx.beginPath();
+      ctx.arc(200, 200, 150, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.beginPath();
+      ctx.arc(1720, 880, 200, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Main message with emoji
       ctx.fillStyle = '#1e293b';
-      ctx.font = 'bold 120px Arial';
+      ctx.font = 'bold 200px Arial';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(message, 480, 180);
+      ctx.fillText(message, 960, 400);
       
-      // Score text - reduced font size
-      ctx.font = 'bold 80px Arial';
-      ctx.fillText(`${score.correct} / ${score.total}`, 480, 300);
+      // Emoji
+      ctx.font = 'bold 250px Arial';
+      ctx.fillText(emoji, 960, 620);
       
-      // Convert to data URL - lower quality
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+      // Score text with nice styling
+      ctx.font = 'bold 140px Arial';
+      ctx.fillText(`${score.correct} / ${score.total}`, 960, 780);
+      
+      // Percentage
+      ctx.font = 'bold 100px Arial';
+      ctx.fillStyle = '#475569';
+      ctx.fillText(`${percentage}%`, 960, 900);
+      
+      // Save to localStorage and create a data URL
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
       
       // eslint-disable-next-line no-undef
       const mediaInfo = new chrome.cast.media.MediaInfo(dataUrl, 'image/jpeg');
@@ -201,7 +229,7 @@ export default function App() {
       const request = new chrome.cast.media.LoadRequest(mediaInfo);
       request.currentTime = 0;
       
-      console.log('Loading results to cast');
+      console.log('Loading high-quality results to cast');
       
       session.loadMedia(request,
         (media) => {
