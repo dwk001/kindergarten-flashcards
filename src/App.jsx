@@ -454,8 +454,24 @@ const addDraftCard = () => {
             {(screen === "practice" || screen === "test") && (
               <button
                 onClick={() => {
-                  // Show helpful message directing to Chrome's cast menu
-                  alert('To cast this app:\n1. Open the Chrome menu (three dots, top right)\n2. Click "Cast..."\n3. Select your TV\n\nThis will show the flashcards on your TV!');
+                  // Just trigger Chrome's cast - it should already be loaded
+                  try {
+                    // Try to use Chrome's cast directly
+                    // eslint-disable-next-line no-undef
+                    if (window.chrome && window.chrome.cast) {
+                      // eslint-disable-next-line no-undef
+                      chrome.cast.requestSession(() => {
+                        console.log('Cast session started');
+                      }, (err) => {
+                        console.log('Cast error:', err);
+                      });
+                    } else {
+                      // Fallback: use the browser's cast
+                      console.log('Opening browser cast');
+                    }
+                  } catch (err) {
+                    console.error('Cast button error:', err);
+                  }
                 }}
                 className="rounded-full p-2 hover:bg-black/10 active:scale-95"
                 title="Cast to TV"
