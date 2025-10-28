@@ -146,9 +146,11 @@ export default function App() {
     console.log('CAST DEBUG: useEffect running, isCasting:', isCasting, 'screen:', screen);
     
     const checkCastSession = () => {
+      console.log('CAST DEBUG: checkCastSession running...');
       try {
         // eslint-disable-next-line no-undef
         if (window.cast && window.cast.framework) {
+          console.log('CAST DEBUG: window.cast.framework exists');
           // eslint-disable-next-line no-undef
           const context = window.cast.framework.CastContext.getInstance();
           const session = context.getCurrentSession();
