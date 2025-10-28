@@ -454,18 +454,16 @@ const addDraftCard = () => {
             {(screen === "practice" || screen === "test") && (
               <button
                 onClick={() => {
-                  try {
+                  // Simply trigger Chrome's native cast picker
+                  // eslint-disable-next-line no-undef
+                  if (typeof chrome !== 'undefined' && chrome.cast && chrome.cast.requestSession) {
                     // eslint-disable-next-line no-undef
-                    if (window.cast && window.cast.framework) {
-                      // eslint-disable-next-line no-undef
-                      const castContext = window.cast.framework.CastContext.getInstance();
-                      castContext.requestSession();
-                    } else {
-                      alert('Cast SDK not available. Use Chrome menu (three dots) > Cast to display on TV');
-                    }
-                  } catch (error) {
-                    console.error('Cast error:', error);
-                    alert('Error connecting to Cast: ' + error.message);
+                    chrome.cast.requestSession(() => {}, () => {
+                      // If no session available, show info
+                      console.log('No cast session available');
+                    });
+                  } else {
+                    alert('Use the three-dot menu (top right) > Cast to display on TV');
                   }
                 }}
                 className="rounded-full p-2 hover:bg-black/10 active:scale-95"
