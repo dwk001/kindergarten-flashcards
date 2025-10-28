@@ -140,14 +140,12 @@ export default function App() {
   const [castSession, setCastSession] = useState(null);
   const [isCasting, setIsCasting] = useState(false);
 
+  const previousIsCastingRef = useRef(false);
+  
   useEffect(() => {
     console.log('CAST DEBUG: useEffect running, isCasting:', isCasting, 'screen:', screen);
     
-    // Poll for cast session changes
-    let previousIsCasting = isCasting;
-    
     const checkCastSession = () => {
-      console.log('CAST DEBUG: checkCastSession called, previousIsCasting:', previousIsCasting);
       try {
         // eslint-disable-next-line no-undef
         if (window.cast && window.cast.framework) {
@@ -156,12 +154,15 @@ export default function App() {
           const session = context.getCurrentSession();
           setCastSession(session);
           const nowCasting = !!session;
+          const wasCasting = previousIsCastingRef.current;
           setIsCasting(nowCasting);
           
+          console.log('CAST DEBUG: wasCasting:', wasCasting, 'nowCasting:', nowCasting);
+          
           // If we just started casting and we're in a practice/test session, send current card
-          if (!previousIsCasting && nowCasting && session) {
+          if (!wasCasting && nowCasting && session) {
             console.log('CASTING JUST STARTED. Screen:', screen, 'Practice/Test mode:', screen === 'practice' || screen === 'test');
-            console.log('isCasting was:', previousIsCasting, 'now:', nowCasting);
+            console.log('isCasting was:', wasCasting, 'now:', nowCasting);
             if (screen === 'practice' || screen === 'test') {
               console.log('In practice/test mode, getting card...');
               // Use the session directly instead of state
@@ -181,8 +182,9 @@ export default function App() {
               console.log('Not in practice/test mode, not sending card');
             }
           }
-          console.log('Current status - previous:', previousIsCasting, 'now:', nowCasting);
-          previousIsCasting = nowCasting;
+          
+          // Update the ref
+          previousIsCastingRef.current = nowCasting;
         }
       } catch (e) {
         // SDK not ready yet
