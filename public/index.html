@@ -28,20 +28,29 @@
     <script>
       window['__onGCastApiAvailable'] = function(isAvailable) {
         if (isAvailable) {
-          setTimeout(function() {
-            try {
-              if (typeof cast !== 'undefined' && cast.framework) {
-                const context = cast.framework.CastContext.getInstance();
-                context.setOptions({
-                  receiverApplicationId: '34E3CA03',
-                  autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
-                });
-                console.log('Cast SDK initialized successfully');
+          try {
+            // Initialize the older Chrome Cast API
+            const sessionRequest = new chrome.cast.SessionRequest('34E3CA03');
+            const apiConfig = new chrome.cast.ApiConfig(
+              sessionRequest,
+              function sessionListener(session) {
+                console.log('Cast session established:', session);
+              },
+              function receiverListener(availability) {
+                console.log('Cast receiver availability:', availability);
               }
-            } catch (error) {
-              console.error('Cast SDK initialization error:', error);
-            }
-          }, 100);
+            );
+            chrome.cast.initialize(apiConfig, 
+              function() {
+                console.log('Cast API initialized successfully');
+              },
+              function(error) {
+                console.error('Cast API initialization error:', error);
+              }
+            );
+          } catch (error) {
+            console.error('Cast SDK initialization error:', error);
+          }
         } else {
           console.warn('Cast SDK not available');
         }
