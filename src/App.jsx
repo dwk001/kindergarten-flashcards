@@ -287,24 +287,27 @@ export default function App() {
       
       const cardText = showBack ? (card.back || card.front) : card.front;
       
-      // Create an image from the card text using canvas - smaller size for Chromecast
+      // Create a high-quality card image
       const canvas = document.createElement('canvas');
-      canvas.width = 1280;
-      canvas.height = 720;
+      canvas.width = 1920;
+      canvas.height = 1080;
       const ctx = canvas.getContext('2d');
       
-      // Background
-      ctx.fillStyle = '#fef3c7';
-      ctx.fillRect(0, 0, 1280, 720);
+      // Gradient background
+      const gradient = ctx.createLinearGradient(0, 0, 0, 1080);
+      gradient.addColorStop(0, '#fef3c7');
+      gradient.addColorStop(1, '#fde68a');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 1920, 1080);
       
-      // Text
+      // Text - much larger
       ctx.fillStyle = '#1e293b';
-      ctx.font = 'bold 200px Arial';
+      ctx.font = 'bold 300px Arial';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       
       // Handle long words
-      const maxWidth = 1100;
+      const maxWidth = 1600;
       const words = cardText.split(' ');
       let lines = [];
       let currentLine = '';
@@ -322,15 +325,15 @@ export default function App() {
       if (currentLine) lines.push(currentLine);
       
       // Draw lines
-      const lineHeight = 230;
-      const startY = 360 - ((lines.length - 1) * lineHeight) / 2;
+      const lineHeight = 350;
+      const startY = 540 - ((lines.length - 1) * lineHeight) / 2;
       
       lines.forEach((line, idx) => {
-        ctx.fillText(line, 640, startY + idx * lineHeight);
+        ctx.fillText(line, 960, startY + idx * lineHeight);
       });
       
-      // Convert to data URL
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+      // Convert to data URL with high quality
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
       
       // eslint-disable-next-line no-undef
       const mediaInfo = new chrome.cast.media.MediaInfo(dataUrl, 'image/jpeg');
