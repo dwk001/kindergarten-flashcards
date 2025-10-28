@@ -22,7 +22,8 @@
           const context = cast.framework.CastContext.getInstance();
           context.setOptions({
             receiverApplicationId: '34E3CA03',
-            autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+            autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
+            receiverName: 'https://flashcards.dwk001.com/receiver.html'
           });
         }
       };
