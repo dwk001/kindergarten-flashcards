@@ -148,20 +148,19 @@ export default function App() {
     const checkCastSession = () => {
       console.log('CAST DEBUG: checkCastSession running...');
       try {
-        console.log('CAST DEBUG: window.cast exists?', typeof window.cast !== 'undefined');
-        console.log('CAST DEBUG: window.cast.framework exists?', typeof window.cast !== 'undefined' && typeof window.cast.framework !== 'undefined');
         // eslint-disable-next-line no-undef
-        if (window.cast && window.cast.framework) {
-          console.log('CAST DEBUG: window.cast.framework exists');
+        if (window.chrome && window.chrome.cast) {
+          console.log('CAST DEBUG: Using chrome.cast API');
           // eslint-disable-next-line no-undef
-          const context = window.cast.framework.CastContext.getInstance();
-          const session = context.getCurrentSession();
+          const session = window.chrome.cast && window.chrome.cast.isAvailable ? 
+            window.chrome.cast.currentSession : null;
+          
           setCastSession(session);
           const nowCasting = !!session;
           const wasCasting = previousIsCastingRef.current;
           setIsCasting(nowCasting);
           
-          console.log('CAST DEBUG: wasCasting:', wasCasting, 'nowCasting:', nowCasting);
+          console.log('CAST DEBUG: wasCasting:', wasCasting, 'nowCasting:', nowCasting, 'session:', session);
           
           // If we just started casting and we're in a practice/test session, send current card
           if (!wasCasting && nowCasting && session) {
