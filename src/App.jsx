@@ -332,30 +332,75 @@ export default function App() {
         ctx.fillText(line, 960, startY + idx * lineHeight);
       });
       
-      // Convert to data URL with high quality
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-      
-      // eslint-disable-next-line no-undef
-      const mediaInfo = new chrome.cast.media.MediaInfo(dataUrl, 'image/jpeg');
-      // eslint-disable-next-line no-undef
-      mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
-      mediaInfo.metadata.title = cardText;
-      mediaInfo.metadata.subtitle = card.back ? 'Tap your device to see the answer' : '';
-      
-      // eslint-disable-next-line no-undef
-      const request = new chrome.cast.media.LoadRequest(mediaInfo);
-      request.currentTime = 0;
-      
-      console.log('Loading media with data URL length:', dataUrl.length);
-      
-      session.loadMedia(request,
-        (media) => {
-          console.log('Cast media loaded successfully:', cardText, media);
-        },
-        (error) => {
-          console.error('Cast load error:', error);
+      // Convert to blob and upload to server
+      canvas.toBlob(async (blob) => {
+        try {
+          // Upload to image server
+          const formData = new FormData();
+          formData.append('image', blob, 'card.jpg');
+          
+          const response = await fetch('/upload-image', {
+            method: 'POST',
+            body: formData
+          });
+          
+          if (!response.ok) {
+            throw new Error('Upload failed');
+          }
+          
+          const data = await response.json();
+          const imageUrl = data.url;
+          
+          console.log('Image uploaded to:', imageUrl);
+          
+          // Cast the hosted image
+          // eslint-disable-next-line no-undef
+          const mediaInfo = new chrome.cast.media.MediaInfo(imageUrl, 'image/jpeg');
+          // eslint-disable-next-line no-undef
+          mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
+          mediaInfo.metadata.title = cardText;
+          mediaInfo.metadata.subtitle = card.back ? 'Tap your device to see the answer' : '';
+          
+          // eslint-disable-next-line no-undef
+          const request = new chrome.cast.media.LoadRequest(mediaInfo);
+          request.currentTime = 0;
+          
+          console.log('Casting hosted image:', imageUrl);
+          
+          session.loadMedia(request,
+            (media) => {
+              console.log('Cast media loaded successfully:', cardText, media);
+            },
+            (error) => {
+              console.error('Cast load error:', error);
+            }
+          );
+        } catch (e) {
+          console.error('Failed to upload/cast card:', e);
+          // Fallback: use smaller data URL
+          const smallCanvas = document.createElement('canvas');
+          smallCanvas.width = 1280;
+          smallCanvas.height = 720;
+          const smallCtx = smallCanvas.getContext('2d');
+          smallCtx.fillStyle = '#fef3c7';
+          smallCtx.fillRect(0, 0, 1280, 720);
+          smallCtx.fillStyle = '#1e293b';
+          smallCtx.font = 'bold 200px Arial';
+          smallCtx.textAlign = 'center';
+          smallCtx.textBaseline = 'middle';
+          smallCtx.fillText(cardText, 640, 360);
+          const dataUrl = smallCanvas.toDataURL('image/jpeg', 0.7);
+          // eslint-disable-next-line no-undef
+          const mediaInfo = new chrome.cast.media.MediaInfo(dataUrl, 'image/jpeg');
+          // eslint-disable-next-line no-undef
+          mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
+          mediaInfo.metadata.title = cardText;
+          // eslint-disable-next-line no-undef
+          const request = new chrome.cast.media.LoadRequest(mediaInfo);
+          request.currentTime = 0;
+          session.loadMedia(request, () => {}, () => {});
         }
-      );
+      }, 'image/jpeg', 0.95);
     } catch (e) {
       console.error('Failed to load media:', e);
     }
