@@ -1,70 +1,118 @@
-# Getting Started with Create React App
+# Kindergarten Flashcards 📚
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+An interactive, educational flashcard application designed for kindergarten students to learn letters, sight words, and CVC (consonant-vowel-consonant) words. The app provides a user-friendly, colorful interface optimized for young learners.
 
-## Available Scripts
+![Kindergarten Flashcards](https://img.shields.io/badge/react-18.2.0-61dafb?logo=react)
+![Tailwind CSS](https://img.shields.io/badge/tailwind-3.3.0-38bdf8?logo=tailwindcss)
 
-In the project directory, you can run:
+## ✨ Features
 
-### `npm start`
+### Study Modes
+- **Practice Mode**: Learn at your own pace with a calm, unhurried environment
+- **Test Mode**: Challenge yourself with timed sessions and track progress
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Deck Management
+- Create, edit, and delete custom flashcard decks
+- Organized deck browser with categories (Alphabet, Sight Words, CVC Words)
+- Elegant card editor with expandable fields for hints and back-side content
+- Quick save functionality with top and bottom action buttons
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Smart Statistics
+- Track progress per deck with visual statistics
+- Shows correct, incorrect, and total attempts
+- Motivating feedback messages tailored to performance
 
-### `npm test`
+### Beautiful UI
+- Colorful, friendly design with warm amber/gold color scheme
+- Fully responsive layout (mobile, tablet, desktop)
+- Optimized for touch interactions
+- Accessible and intuitive navigation
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🎯 Purpose
 
-### `npm run build`
+This application helps kindergarten students:
+- Master letter recognition
+- Learn common sight words
+- Build phonetic skills with CVC words
+- Develop confidence through positive reinforcement
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🛠️ Tech Stack
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- **React** - UI framework
+- **Tailwind CSS** - Styling
+- **Lucide React** - Icon library
+- **json-server** - Backend API for data persistence
+- **Create React App** - Build tooling
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 📦 Installation
 
-### `npm run eject`
+### Prerequisites
+- Node.js 14+ and npm
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Setup
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+1. Clone the repository:
+```bash
+git clone https://github.com/dwk001/kindergarten-flashcards.git
+cd kindergarten-flashcards
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+3. Start the development server:
+```bash
+npm start
+```
 
-## Learn More
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 🚀 Deployment
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+The app is designed to be deployed to any static hosting service. A Docker deployment setup is also available.
 
-### Code Splitting
+### Build for Production
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```bash
+npm run build
+```
 
-### Analyzing the Bundle Size
+This creates an optimized production build in the `build/` folder.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## 📝 Scripts
 
-### Making a Progressive Web App
+- `npm start` - Start development server
+- `npm run build` - Build for production
+- `npm test` - Run tests
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## 🎨 Screenshots
 
-### Advanced Configuration
+### Home Screen
+Browse and select from available flashcard decks including Alphabet, Sight Words, and CVC Words.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### Study Modes
+Practice at your own pace or challenge yourself with timed tests. Cards flip to reveal hints and answers.
 
-### Deployment
+### Edit Deck Screen
+Create and manage your flashcard decks with an intuitive editor that adapts to screen size. Expandable card fields keep the interface clean and organized.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+### Results Screen
+Get age-appropriate feedback based on your performance with encouragement at every level.
 
-### `npm run build` fails to minify
+## 🤝 Contributing
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is open source and available for educational use.
+
+## 🙏 Acknowledgments
+
+Built with care for young learners, featuring a thoughtful UI/UX designed to make learning engaging and fun.
+
+---
+
+Made with ❤️ for kindergarten students everywhere
