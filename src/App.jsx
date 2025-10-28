@@ -148,6 +148,8 @@ export default function App() {
     const checkCastSession = () => {
       console.log('CAST DEBUG: checkCastSession running...');
       try {
+        console.log('CAST DEBUG: window.cast exists?', typeof window.cast !== 'undefined');
+        console.log('CAST DEBUG: window.cast.framework exists?', typeof window.cast !== 'undefined' && typeof window.cast.framework !== 'undefined');
         // eslint-disable-next-line no-undef
         if (window.cast && window.cast.framework) {
           console.log('CAST DEBUG: window.cast.framework exists');
