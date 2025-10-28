@@ -170,24 +170,24 @@ export default function App() {
       
       const cardText = showBack ? (card.back || card.front) : card.front;
       
-      // Create an image from the card text using canvas
+      // Create an image from the card text using canvas - smaller size for Chromecast
       const canvas = document.createElement('canvas');
-      canvas.width = 1920;
-      canvas.height = 1080;
+      canvas.width = 1280;  // Reduced from 1920
+      canvas.height = 720;  // Reduced from 1080
       const ctx = canvas.getContext('2d');
       
       // Background
       ctx.fillStyle = '#fef3c7';
-      ctx.fillRect(0, 0, 1920, 1080);
+      ctx.fillRect(0, 0, 1280, 720);
       
-      // Text
+      // Text - reduced font size
       ctx.fillStyle = '#1e293b';
-      ctx.font = 'bold 300px Arial';
+      ctx.font = 'bold 200px Arial';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       
       // Handle long words by splitting into lines
-      const maxWidth = 1600;
+      const maxWidth = 1100;  // Reduced from 1600
       const words = cardText.split(' ');
       let lines = [];
       let currentLine = '';
@@ -205,15 +205,15 @@ export default function App() {
       if (currentLine) lines.push(currentLine);
       
       // Draw lines
-      const lineHeight = 350;
-      const startY = 540 - ((lines.length - 1) * lineHeight) / 2;
+      const lineHeight = 230;  // Reduced from 350
+      const startY = 360 - ((lines.length - 1) * lineHeight) / 2;
       
       lines.forEach((line, idx) => {
-        ctx.fillText(line, 960, startY + idx * lineHeight);
+        ctx.fillText(line, 640, startY + idx * lineHeight);
       });
       
-      // Convert canvas to data URL
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      // Convert canvas to data URL - lower quality to reduce size
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
       
       // eslint-disable-next-line no-undef
       const mediaInfo = new chrome.cast.media.MediaInfo(dataUrl, 'image/jpeg');
