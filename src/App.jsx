@@ -140,64 +140,8 @@ export default function App() {
   const [castSession, setCastSession] = useState(null);
   const [isCasting, setIsCasting] = useState(false);
 
-  const previousIsCastingRef = useRef(false);
-  
-  useEffect(() => {
-    console.log('CAST DEBUG: useEffect running, isCasting:', isCasting, 'screen:', screen);
-    
-    const checkCastSession = () => {
-      console.log('CAST DEBUG: checkCastSession running...');
-      try {
-        // eslint-disable-next-line no-undef
-        if (window.chrome && window.chrome.cast) {
-          console.log('CAST DEBUG: Using chrome.cast API');
-          // eslint-disable-next-line no-undef
-          // Try to get the current session via the helper function
-          const session = window.getChromecastSession ? window.getChromecastSession() : null;
-          console.log('CAST DEBUG: session from helper:', session);
-          
-          setCastSession(session);
-          const nowCasting = !!session;
-          const wasCasting = previousIsCastingRef.current;
-          setIsCasting(nowCasting);
-          
-          console.log('CAST DEBUG: wasCasting:', wasCasting, 'nowCasting:', nowCasting, 'session:', session);
-          
-          // If we just started casting and we're in a practice/test session, send current card
-          if (!wasCasting && nowCasting && session) {
-            console.log('CASTING JUST STARTED. Screen:', screen, 'Practice/Test mode:', screen === 'practice' || screen === 'test');
-            console.log('isCasting was:', wasCasting, 'now:', nowCasting);
-            if (screen === 'practice' || screen === 'test') {
-              console.log('In practice/test mode, getting card...');
-              // Use the session directly instead of state
-              const card = currentCard || 
-                (screen === 'practice' && activeDeck && queue.length > 0 ? activeDeck.cards[queue[currentIdx]] : null) ||
-                (screen === 'test' && activeDeck && testQueue.length > 0 ? activeDeck.cards[testQueue[testIdx]] : null);
-              
-              console.log('Card found:', card);
-              if (card) {
-                console.log('Sending card to cast:', card);
-                // Call sendCardToCast with the session
-                sendCardToCastWithSession(session, card);
-              } else {
-                console.log('No card found to send');
-              }
-            } else {
-              console.log('Not in practice/test mode, not sending card');
-            }
-          }
-          
-          // Update the ref
-          previousIsCastingRef.current = nowCasting;
-        }
-      } catch (e) {
-        // SDK not ready yet
-      }
-    };
-    
-    const interval = setInterval(checkCastSession, 1000);
-    return () => clearInterval(interval);
-  }, [isCasting, screen, currentCard, activeDeck, queue, currentIdx, testQueue, testIdx]);
+  // Simplified: Just track if we're casting via state (updated when button is clicked)
+  // No polling needed since we capture session directly in button onClick
 
   const sendCardToCastWithSession = (session, card) => {
     if (!session || !card) return;
@@ -371,8 +315,8 @@ export default function App() {
     setStats({ seen: 0, correct: 0 });
     
     // Send initial card to Chromecast if casting
-    if (isCasting && activeDeck.cards.length > 0) {
-      sendCardToCast(activeDeck.cards[shuffled[0]]);
+    if (isCasting && castSession && activeDeck.cards.length > 0) {
+      sendCardToCastWithSession(castSession, activeDeck.cards[shuffled[0]]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screen, activeDeckId, isCasting]);
@@ -403,9 +347,9 @@ export default function App() {
     setStats((s) => ({ seen: s.seen + 1, correct: s.correct + (correct ? 1 : 0) }));
     
     // Send card to Chromecast if casting
-    if (isCasting && activeDeck && activeDeck.cards.length > 0) {
+    if (isCasting && castSession && activeDeck && activeDeck.cards.length > 0) {
       const nextCard = activeDeck.cards[q[newIdx]];
-      sendCardToCast(nextCard);
+      sendCardToCastWithSession(castSession, nextCard);
     }
   };
 
@@ -420,8 +364,8 @@ export default function App() {
     setScreen("test");
     
     // Send initial card to Chromecast if casting
-    if (isCasting && activeDeck.cards.length > 0) {
-      sendCardToCast(activeDeck.cards[indices[0]]);
+    if (isCasting && castSession && activeDeck.cards.length > 0) {
+      sendCardToCastWithSession(castSession, activeDeck.cards[indices[0]]);
     }
   };
 
@@ -437,9 +381,9 @@ export default function App() {
       setShowBack(false);
       
       // Send next card to Chromecast if casting
-      if (isCasting && activeDeck && activeDeck.cards.length > 0) {
+      if (isCasting && castSession && activeDeck && activeDeck.cards.length > 0) {
         const nextCard = activeDeck.cards[testQueue[testIdx + 1]];
-        sendCardToCast(nextCard);
+        sendCardToCastWithSession(castSession, nextCard);
       }
     }
   };
@@ -629,6 +573,14 @@ const addDraftCard = () => {
                       window.chrome.cast.requestSession(
                         (session) => {
                           console.log('Cast session started:', session);
+                          // Store the session immediately
+                          setCastSession(session);
+                          setIsCasting(true);
+                          
+                          // Send current card to TV immediately
+                          if (currentCard) {
+                            sendCardToCastWithSession(session, currentCard);
+                          }
                         },
                         (error) => {
                           console.log('Cast session error:', error);
